@@ -10,12 +10,14 @@
     android:paddingTop="@dimen/activity_vertical_margin"
     tools:context="com.munaz.roomies.LoginActivity">
 
+    <include layout="@layout/loading" />
+
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginBottom="10dp"
         android:gravity="center"
-        android:text="@string/roomies_app"
+        android:text="@string/roomies"
         android:textSize="50sp" />
 
     <TextView

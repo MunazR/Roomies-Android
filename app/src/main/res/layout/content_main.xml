@@ -14,7 +14,7 @@
     tools:context="com.munaz.roomies.MainActivity">
 
     <TextView
-        android:text="Welcome to Roomies App!"
+        android:text="Welcome to Roomies!"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content" />
 </RelativeLayout>
