@@ -13,6 +13,12 @@ import com.android.volley.toolbox.Volley;
  * Singleton used for queueing requests
  */
 public class Server {
+    public static final String LOGIN_URL = "/login";
+    public static final String GROUP_URL = "/group";
+    public static final String GROUP_CREATE_URL = "/group/create";
+    public static final String GROUP_DELETE_URL = "/group/delete";
+
+
     private static Server mInstance = null;
     private static Context mCtx;
 
