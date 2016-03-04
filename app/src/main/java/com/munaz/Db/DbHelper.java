@@ -23,6 +23,7 @@ public class DbHelper extends SQLiteOpenHelper {
     public static final String GROUP_COLUMN_ID = "Id";
     public static final String GROUP_COLUMN_OWNER = "Owner";
     public static final String GROUP_COLUMN_MEMBERS = "Members";
+    public static final String GROUP_COLUMN_INVITED = "Invited";
 
     private static final String USER_TABLE_CREATE =
             "CREATE TABLE " + USER_TABLE_NAME + " (" +
@@ -36,7 +37,8 @@ public class DbHelper extends SQLiteOpenHelper {
             "CREATE TABLE " + GROUP_TABLE_NAME + " ( " +
                     GROUP_COLUMN_ID + " TEXT PRIMARY KEY, " +
                     GROUP_COLUMN_OWNER + " TEXT, " +
-                    GROUP_COLUMN_MEMBERS + " TEXT)";
+                    GROUP_COLUMN_MEMBERS + " TEXT, " +
+                    GROUP_COLUMN_INVITED + " TEXT)";
 
     DbHelper(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);

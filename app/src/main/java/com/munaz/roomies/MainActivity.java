@@ -1,6 +1,7 @@
 package com.munaz.roomies;
 
 import android.app.AlertDialog;
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.os.Bundle;
@@ -86,7 +87,30 @@ public class MainActivity extends AppCompatActivity
                     AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
                     builder.setMessage(R.string.leave_group_owner).setPositiveButton(R.string.yes, dialogClickListener)
                             .setNegativeButton(R.string.no, dialogClickListener).show();
+                } else {
+                    DialogInterface.OnClickListener dialogClickListener = new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            switch (which) {
+                                case DialogInterface.BUTTON_POSITIVE:
+                                    leaveGroup();
+                                    break;
+                            }
+                        }
+                    };
+
+                    AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
+                    builder.setMessage(R.string.leave_group_prompt).setPositiveButton(R.string.yes, dialogClickListener)
+                            .setNegativeButton(R.string.no, dialogClickListener).show();
                 }
+            }
+        });
+
+        final Button inviteRoommateButton = (Button) findViewById(R.id.add_new_roommate);
+        inviteRoommateButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                onSearchRequested();
             }
         });
 
@@ -163,7 +187,12 @@ public class MainActivity extends AppCompatActivity
             return;
         }
 
-        showLoading();
+        final ProgressDialog dialog = new ProgressDialog(this); // this = YourActivity
+        dialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
+        dialog.setMessage("Retrieving group. Please wait...");
+        dialog.setIndeterminate(true);
+        dialog.setCanceledOnTouchOutside(false);
+        dialog.show();
 
         // Update group from server
         final String baseUrl = getString(R.string.base_url);
@@ -184,6 +213,7 @@ public class MainActivity extends AppCompatActivity
                 try {
                     if (response.has("group")) {
                         // We got a group! Let's update our view
+                        dialog.hide();
                         Group group = new Group(response.getJSONObject("group"));
                         Db.getInstance(context).insertGroup(group);
                         updateViewWithGroup(group);
@@ -192,25 +222,28 @@ public class MainActivity extends AppCompatActivity
                         JSONObject reqBody = new JSONObject();
                         reqBody.put("facebookId", Profile.getCurrentProfile().getId());
 
-                        JsonObjectRequest loginRequest = new JsonObjectRequest(Request.Method.POST, baseUrl + Server.LOGIN_URL, reqBody, new Response.Listener<JSONObject>() {
+                        JsonObjectRequest loginRequest = new JsonObjectRequest(Request.Method.POST, baseUrl + Server.INVITES_URL, reqBody, new Response.Listener<JSONObject>() {
                             @Override
                             public void onResponse(JSONObject response) {
-                                try {
-                                    JSONObject userJSON = response.getJSONObject("user");
-                                    JSONArray invitedToGroupsJSON = userJSON.getJSONArray("invitedTo");
-                                    List<Group> invitedToGroups = new ArrayList<>();
-                                    for (int i = 0; i < invitedToGroupsJSON.length(); i++) {
-                                        invitedToGroups.add(new Group(invitedToGroupsJSON.getJSONObject(i)));
+                                dialog.hide();
+                                List<Group> invitedGroups = new ArrayList<>();
+                                if (response.has("groups")) {
+                                    try {
+                                        JSONArray groups = response.getJSONArray("groups");
+                                        for (int i = 0; i < groups.length(); i++) {
+                                            invitedGroups.add(new Group(groups.getJSONObject(i)));
+                                        }
+                                    } catch (JSONException e) {
+                                        handleError(e);
+                                        return;
                                     }
-
-                                    updatedViewWithInvites(invitedToGroups);
-                                } catch (JSONException e) {
-                                    handleError(e);
                                 }
+                                updatedViewWithInvites(invitedGroups);
                             }
                         }, new Response.ErrorListener() {
                             @Override
                             public void onErrorResponse(VolleyError error) {
+                                dialog.hide();
                                 handleError(error);
                             }
                         });
@@ -218,12 +251,14 @@ public class MainActivity extends AppCompatActivity
                         Server.getInstance(context).addToRequestQueue(loginRequest);
                     }
                 } catch (JSONException e) {
+                    dialog.hide();
                     handleError(e);
                 }
             }
         }, new Response.ErrorListener() {
             @Override
             public void onErrorResponse(VolleyError error) {
+                dialog.hide();
                 handleError(error);
             }
         });
@@ -231,43 +266,7 @@ public class MainActivity extends AppCompatActivity
         Server.getInstance(context).addToRequestQueue(groupRequest);
     }
 
-    private void deleteGroup() {
-        if (!AppUtils.isNetworkAvailable(getApplicationContext())) {
-            Toast.makeText(getApplicationContext(), "No network connection", Toast.LENGTH_SHORT).show();
-            return;
-        }
-
-        showLoading();
-
-        String baseUrl = getString(R.string.base_url);
-        JSONObject reqBody = new JSONObject();
-
-        try {
-            reqBody.put("facebookId", Profile.getCurrentProfile().getId());
-        } catch (JSONException e) {
-            handleError(e);
-            return;
-        }
-
-        JsonObjectRequest deleteGroupRequest = new JsonObjectRequest(Request.Method.POST, baseUrl + Server.GROUP_DELETE_URL, reqBody, new Response.Listener<JSONObject>() {
-            @Override
-            public void onResponse(JSONObject response) {
-                hideLoading();
-                Toast.makeText(getApplicationContext(), "Disbanded group", Toast.LENGTH_SHORT).show();
-                refreshGroup(getApplicationContext());
-            }
-        }, new Response.ErrorListener() {
-            @Override
-            public void onErrorResponse(VolleyError error) {
-                handleError(error);
-            }
-        });
-
-        Server.getInstance(getApplicationContext()).addToRequestQueue(deleteGroupRequest);
-    }
-
-    private void updateViewWithGroup(Group group) {
-        hideLoading();
+    private void updateViewWithGroup(final Group group) {
         findViewById(R.id.no_group_exists).setVisibility(View.GONE);
 
         if (!Profile.getCurrentProfile().getId().equals(group.owner.id)) {
@@ -276,46 +275,268 @@ public class MainActivity extends AppCompatActivity
             findViewById(R.id.add_new_roommate).setVisibility(View.VISIBLE);
         }
 
-        final User[] users = new User[group.members.size()];
-        group.members.toArray(users);
+        final User[] members = new User[group.members.size()];
+        group.members.toArray(members);
 
-        String[] displayNames = new String[users.length];
+        String[] displayNames = new String[members.length];
 
-        for (int i = 0; i < users.length; i++) {
-            displayNames[i] = users[i].displayName;
+        for (int i = 0; i < members.length; i++) {
+            displayNames[i] = members[i].displayName;
         }
 
         ListView roommatesListView = (ListView) findViewById(R.id.roommates);
-        roommatesListView.setAdapter(new RoommateArrayAdapter(getApplicationContext(), users, displayNames));
+        roommatesListView.setAdapter(new RoommateArrayAdapter(getApplicationContext(), members, displayNames));
 
         roommatesListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                User selectedUser = users[position];
-                Toast.makeText(getApplicationContext(), "Selected: " + selectedUser.displayName, Toast.LENGTH_SHORT).show();
+                final User selectedUser = members[position];
+                String profileId = Profile.getCurrentProfile().getId();
+                if (group.owner.id.equals(profileId) && !selectedUser.id.equals(profileId)) {
+                    DialogInterface.OnClickListener dialogClickListener = new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            switch (which) {
+                                case DialogInterface.BUTTON_POSITIVE:
+                                    kickFromGroup(selectedUser);
+                                    break;
+                            }
+                        }
+                    };
+
+                    AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
+                    builder.setMessage(getString(R.string.kick_prompt) + selectedUser.displayName).setPositiveButton(R.string.yes, dialogClickListener)
+                            .setNegativeButton(R.string.no, dialogClickListener).show();
+                }
             }
         });
+
+        final User[] invited = new User[group.invited.size()];
+        group.invited.toArray(invited);
+
+        if (invited.length == 0) {
+            findViewById(R.id.invited_label).setVisibility(View.GONE);
+            findViewById(R.id.invited).setVisibility(View.GONE);
+        } else {
+            findViewById(R.id.invited_label).setVisibility(View.VISIBLE);
+            findViewById(R.id.invited).setVisibility(View.VISIBLE);
+
+            String[] invitedDisplayNames = new String[invited.length];
+
+            for (int i = 0; i < invited.length; i++) {
+                invitedDisplayNames[i] = invited[i].displayName;
+            }
+
+            ListView invitedListView = (ListView) findViewById(R.id.invited);
+            invitedListView.setAdapter(new RoommateArrayAdapter(getApplicationContext(), invited, invitedDisplayNames));
+
+            invitedListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+                @Override
+                public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                    final User selectedUser = invited[position];
+                    DialogInterface.OnClickListener dialogClickListener = new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            switch (which) {
+                                case DialogInterface.BUTTON_POSITIVE:
+                                    uninvite(selectedUser);
+                                    break;
+                            }
+                        }
+                    };
+
+                    AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
+                    builder.setMessage(getString(R.string.uninvite_prompt) + selectedUser.displayName).setPositiveButton(R.string.yes, dialogClickListener)
+                            .setNegativeButton(R.string.no, dialogClickListener).show();
+                }
+            });
+        }
 
         findViewById(R.id.group_exists).setVisibility(View.VISIBLE);
     }
 
     private void updatedViewWithInvites(List<Group> groups) {
-        hideLoading();
         findViewById(R.id.group_exists).setVisibility(View.GONE);
+        ListView invitesListView = (ListView) findViewById(R.id.invites);
 
         TextView inviteTextView = (TextView) findViewById(R.id.invites_title);
 
         if (groups.size() == 0) {
             inviteTextView.setText(R.string.no_invites);
+            invitesListView.setVisibility(View.INVISIBLE);
         } else {
             inviteTextView.setText(R.string.invites);
+
+            final User[] owners = new User[groups.size()];
+            String[] displayNames = new String[groups.size()];
+
+            for (int i = 0; i < groups.size(); i++) {
+                owners[i] = groups.get(i).owner;
+                displayNames[i] = groups.get(i).owner.displayName;
+            }
+
+            invitesListView.setVisibility(View.VISIBLE);
+            invitesListView.setAdapter(new RoommateArrayAdapter(getApplicationContext(), owners, displayNames));
+
+            invitesListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+                @Override
+                public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                    final User selectedOwner = owners[position];
+
+                    DialogInterface.OnClickListener dialogClickListener = new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            switch (which) {
+                                case DialogInterface.BUTTON_POSITIVE:
+                                    acceptInvite(selectedOwner);
+                                    break;
+                            }
+                        }
+                    };
+
+                    AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
+                    builder.setMessage("Are you sure you want to join " + selectedOwner.displayName + "'s group").setPositiveButton(R.string.yes, dialogClickListener)
+                            .setNegativeButton(R.string.no, dialogClickListener).show();
+                }
+            });
         }
 
         findViewById(R.id.no_group_exists).setVisibility(View.VISIBLE);
     }
 
+    private void acceptInvite(User owner) {
+        if (!AppUtils.isNetworkAvailable(getApplicationContext())) {
+            Toast.makeText(getApplicationContext(), "No network connection", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        final ProgressDialog dialog = new ProgressDialog(this);
+        dialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
+        dialog.setMessage("Accept invite. Please wait...");
+        dialog.setIndeterminate(true);
+        dialog.setCanceledOnTouchOutside(false);
+        dialog.show();
+
+        String baseUrl = getString(R.string.base_url);
+        JSONObject reqBody = new JSONObject();
+
+        try {
+            reqBody.put("facebookId", Profile.getCurrentProfile().getId());
+            reqBody.put("ownerId", owner.id);
+        } catch (JSONException e) {
+            handleError(e);
+            return;
+        }
+
+        JsonObjectRequest acceptInviteRequest = new JsonObjectRequest(Request.Method.POST, baseUrl + Server.GROUP_ACCEPT_URL, reqBody, new Response.Listener<JSONObject>() {
+            @Override
+            public void onResponse(JSONObject response) {
+                dialog.hide();
+                Toast.makeText(getApplicationContext(), "Joined group", Toast.LENGTH_SHORT).show();
+                refreshGroup(getApplicationContext());
+            }
+        }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                dialog.hide();
+                handleError(error);
+            }
+        });
+
+        Server.getInstance(getApplicationContext()).addToRequestQueue(acceptInviteRequest);
+    }
+
+    private void uninvite(User user) {
+        if (!AppUtils.isNetworkAvailable(getApplicationContext())) {
+            Toast.makeText(getApplicationContext(), "No network connection", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        final ProgressDialog dialog = new ProgressDialog(this);
+        dialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
+        dialog.setMessage("Uninviting from group. Please wait...");
+        dialog.setIndeterminate(true);
+        dialog.setCanceledOnTouchOutside(false);
+        dialog.show();
+
+        String baseUrl = getString(R.string.base_url);
+        JSONObject reqBody = new JSONObject();
+
+        try {
+            reqBody.put("facebookId", Profile.getCurrentProfile().getId());
+            reqBody.put("invitedId", user.id);
+        } catch (JSONException e) {
+            handleError(e);
+            return;
+        }
+
+        JsonObjectRequest uninviteRequest = new JsonObjectRequest(Request.Method.POST, baseUrl + Server.GROUP_UNINVITE_URL, reqBody, new Response.Listener<JSONObject>() {
+            @Override
+            public void onResponse(JSONObject response) {
+                dialog.hide();
+                Toast.makeText(getApplicationContext(), "Uninvited from group", Toast.LENGTH_SHORT).show();
+                refreshGroup(getApplicationContext());
+            }
+        }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                dialog.hide();
+                handleError(error);
+            }
+        });
+
+        Server.getInstance(getApplicationContext()).addToRequestQueue(uninviteRequest);
+    }
+
+    private void kickFromGroup(User user) {
+        if (!AppUtils.isNetworkAvailable(getApplicationContext())) {
+            Toast.makeText(getApplicationContext(), "No network connection", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        final ProgressDialog dialog = new ProgressDialog(this);
+        dialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
+        dialog.setMessage("Kicking from group. Please wait...");
+        dialog.setIndeterminate(true);
+        dialog.setCanceledOnTouchOutside(false);
+        dialog.show();
+
+        String baseUrl = getString(R.string.base_url);
+        JSONObject reqBody = new JSONObject();
+
+        try {
+            reqBody.put("facebookId", Profile.getCurrentProfile().getId());
+            reqBody.put("kickId", user.id);
+        } catch (JSONException e) {
+            handleError(e);
+            return;
+        }
+
+        JsonObjectRequest kickRequest = new JsonObjectRequest(Request.Method.POST, baseUrl + Server.GROUP_KICK_URL, reqBody, new Response.Listener<JSONObject>() {
+            @Override
+            public void onResponse(JSONObject response) {
+                dialog.hide();
+                Toast.makeText(getApplicationContext(), "Kicked from group", Toast.LENGTH_SHORT).show();
+                refreshGroup(getApplicationContext());
+            }
+        }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                dialog.hide();
+                handleError(error);
+            }
+        });
+
+        Server.getInstance(getApplicationContext()).addToRequestQueue(kickRequest);
+    }
+
     private void createGroup(final Context context) {
-        showLoading();
+        final ProgressDialog dialog = new ProgressDialog(this);
+        dialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
+        dialog.setMessage("Creating group. Please wait...");
+        dialog.setIndeterminate(true);
+        dialog.setCanceledOnTouchOutside(false);
+        dialog.show();
 
         String baseUrl = context.getString(R.string.base_url);
         JSONObject reqBody = new JSONObject();
@@ -334,6 +555,7 @@ public class MainActivity extends AppCompatActivity
                     JSONObject groupJSON = response.getJSONObject("group");
                     Group group = new Group(groupJSON);
                     Db.getInstance(context).insertGroup(group);
+                    dialog.hide();
                     updateViewWithGroup(group);
                     Toast.makeText(getApplicationContext(), "Created new group", Toast.LENGTH_SHORT).show();
                 } catch (JSONException e) {
@@ -343,6 +565,7 @@ public class MainActivity extends AppCompatActivity
         }, new Response.ErrorListener() {
             @Override
             public void onErrorResponse(VolleyError error) {
+                dialog.hide();
                 handleError(error);
             }
         });
@@ -350,16 +573,90 @@ public class MainActivity extends AppCompatActivity
         Server.getInstance(context).addToRequestQueue(createGroupRequest);
     }
 
+    private void deleteGroup() {
+        if (!AppUtils.isNetworkAvailable(getApplicationContext())) {
+            Toast.makeText(getApplicationContext(), "No network connection", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        final ProgressDialog dialog = new ProgressDialog(this);
+        dialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
+        dialog.setMessage("Disbanding group. Please wait...");
+        dialog.setIndeterminate(true);
+        dialog.setCanceledOnTouchOutside(false);
+        dialog.show();
+
+        String baseUrl = getString(R.string.base_url);
+        JSONObject reqBody = new JSONObject();
+
+        try {
+            reqBody.put("facebookId", Profile.getCurrentProfile().getId());
+        } catch (JSONException e) {
+            handleError(e);
+            return;
+        }
+
+        JsonObjectRequest deleteGroupRequest = new JsonObjectRequest(Request.Method.POST, baseUrl + Server.GROUP_DELETE_URL, reqBody, new Response.Listener<JSONObject>() {
+            @Override
+            public void onResponse(JSONObject response) {
+                dialog.hide();
+                Toast.makeText(getApplicationContext(), "Disbanded group", Toast.LENGTH_SHORT).show();
+                refreshGroup(getApplicationContext());
+            }
+        }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                dialog.hide();
+                handleError(error);
+            }
+        });
+
+        Server.getInstance(getApplicationContext()).addToRequestQueue(deleteGroupRequest);
+    }
+
+    private void leaveGroup() {
+        if (!AppUtils.isNetworkAvailable(getApplicationContext())) {
+            Toast.makeText(getApplicationContext(), "No network connection", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        final ProgressDialog dialog = new ProgressDialog(this);
+        dialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
+        dialog.setMessage("Leaving group. Please wait...");
+        dialog.setIndeterminate(true);
+        dialog.setCanceledOnTouchOutside(false);
+        dialog.show();
+
+        String baseUrl = getString(R.string.base_url);
+        JSONObject reqBody = new JSONObject();
+
+        try {
+            reqBody.put("facebookId", Profile.getCurrentProfile().getId());
+        } catch (JSONException e) {
+            handleError(e);
+            return;
+        }
+
+        JsonObjectRequest leaveGroupRequest = new JsonObjectRequest(Request.Method.POST, baseUrl + Server.GROUP_LEAVE_URL, reqBody, new Response.Listener<JSONObject>() {
+            @Override
+            public void onResponse(JSONObject response) {
+                dialog.hide();
+                Toast.makeText(getApplicationContext(), "Left group", Toast.LENGTH_SHORT).show();
+                refreshGroup(getApplicationContext());
+            }
+        }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                dialog.hide();
+                handleError(error);
+            }
+        });
+
+        Server.getInstance(getApplicationContext()).addToRequestQueue(leaveGroupRequest);
+    }
+
     private void handleError(Exception error) {
         Log.e(TAG, error.getMessage(), error);
         Toast.makeText(getApplicationContext(), "An unexpected error occurred getting your roommates", Toast.LENGTH_SHORT).show();
-    }
-
-    private void showLoading() {
-        findViewById(R.id.loadingPanel).setVisibility(View.VISIBLE);
-    }
-
-    private void hideLoading() {
-        findViewById(R.id.loadingPanel).setVisibility(View.GONE);
     }
 }

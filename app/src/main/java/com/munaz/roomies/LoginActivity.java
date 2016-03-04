@@ -1,10 +1,10 @@
 package com.munaz.roomies;
 
+import android.app.ProgressDialog;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
-import android.view.View;
 import android.widget.Toast;
 
 import com.android.volley.Request;
@@ -18,10 +18,10 @@ import com.facebook.FacebookSdk;
 import com.facebook.Profile;
 import com.facebook.login.LoginResult;
 import com.facebook.login.widget.LoginButton;
-import com.munaz.db.Db;
-import com.munaz.util.AppUtils;
 import com.munaz.api.Server;
+import com.munaz.db.Db;
 import com.munaz.model.User;
+import com.munaz.util.AppUtils;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -88,18 +88,24 @@ public class LoginActivity extends AppCompatActivity {
     }
 
     private void login(final Intent intent) {
-        showLoading();
+        final ProgressDialog dialog = new ProgressDialog(this);
+        dialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
+        dialog.setMessage("Logging in. Please wait...");
+        dialog.setIndeterminate(true);
+        dialog.setCanceledOnTouchOutside(false);
+        dialog.show();
+
         Profile profile = Profile.getCurrentProfile();
 
         if (profile == null) {
-            hideLoading();
+            dialog.hide();
             Toast.makeText(getApplicationContext(), "Login failed, try again later", Toast.LENGTH_SHORT).show();
             return;
         }
 
         // Check if network is connected
         if (!AppUtils.isNetworkAvailable(getApplicationContext())) {
-            hideLoading();
+            dialog.hide();
             Toast.makeText(getApplicationContext(), "No network connection, try again later", Toast.LENGTH_SHORT).show();
             return;
         }
@@ -114,7 +120,7 @@ public class LoginActivity extends AppCompatActivity {
             reqBody.put("displayName", profile.getName());
             reqBody.put("profilePictureUrl", profile.getProfilePictureUri(64, 64).toString());
         } catch (JSONException e) {
-            hideLoading();
+            dialog.hide();
             Log.e(TAG, "Error creating JSON object", e);
             Toast.makeText(getApplicationContext(), "An unexpected error occurred logging in", Toast.LENGTH_SHORT).show();
             return;
@@ -124,7 +130,7 @@ public class LoginActivity extends AppCompatActivity {
             @Override
             public void onResponse(JSONObject response) {
                 Log.i(TAG, "Login to server successful");
-                hideLoading();
+                dialog.hide();
                 try {
                     JSONObject user = response.getJSONObject("user");
                     Db.getInstance(getApplicationContext()).insertUser(new User(user));
@@ -139,20 +145,12 @@ public class LoginActivity extends AppCompatActivity {
             @Override
             public void onErrorResponse(VolleyError error) {
                 Log.e(TAG, "Error logging into server", error);
-                hideLoading();
+                dialog.hide();
                 Toast.makeText(getApplicationContext(), "An unexpected error occurred logging in", Toast.LENGTH_SHORT).show();
             }
         });
 
         Server.getInstance(getApplicationContext()).addToRequestQueue(loginRequest);
-    }
-
-    private void showLoading() {
-        findViewById(R.id.loadingPanel).setVisibility(View.VISIBLE);
-    }
-
-    private void hideLoading() {
-        findViewById(R.id.loadingPanel).setVisibility(View.GONE);
     }
 }
 

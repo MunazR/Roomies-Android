@@ -43,16 +43,23 @@ public class Db {
 
         String id = groupCursor.getString(0);
         String ownerId = groupCursor.getString(1);
-        String[] memberIds = groupCursor.getString(2).split(",");
-
         User owner = getUser(ownerId);
+
+        String[] memberIds = groupCursor.getString(2).split(",");
         List<User> members = new ArrayList<>();
 
         for (int i = 0; i < memberIds.length; i++) {
             members.add(getUser(memberIds[i]));
         }
 
-        return new Group(id, owner, members);
+        String[] invitedIds = groupCursor.getString(3).split(",");
+        List<User> invited = new ArrayList<>();
+
+        for (int i = 0; i < invitedIds.length; i++) {
+            invited.add(getUser(invitedIds[i]));
+        }
+
+        return new Group(id, owner, members, invited);
     }
 
     public void insertGroup(Group group) {
@@ -66,10 +73,17 @@ public class Db {
             memberIds.append(user.id + ",");
         }
 
+        StringBuilder invitedIds = new StringBuilder();
+        for (User user : group.invited) {
+            insertUser(user);
+            invitedIds.append(user.id + ",");
+        }
+
         ContentValues values = new ContentValues();
         values.put(DbHelper.GROUP_COLUMN_ID, group.id);
         values.put(DbHelper.GROUP_COLUMN_OWNER, group.owner.id);
         values.put(DbHelper.GROUP_COLUMN_MEMBERS, memberIds.toString());
+        values.put(DbHelper.GROUP_COLUMN_INVITED, invitedIds.toString());
 
         mDb.insert(DbHelper.GROUP_TABLE_NAME, null, values);
     }

@@ -40,4 +40,11 @@
     <string name="leave_group_owner">You are the owner of this group. Leaving it will cause it to be disbanded.\n\nAre you sure you want to leave?</string>
     <string name="yes">Yes</string>
     <string name="no">No</string>
+    <string name="invited">Invited</string>
+    <string name="title_activity_roommate_search">RoommateSearchActivity</string>
+    <string name="enter_roommate_name">Enter roommate name</string>
+    <string name="invite_instruction">Tap a user to invite them</string>
+    <string name="leave_group_prompt">Are you sure you want to leave this group?</string>
+    <string name="uninvite_prompt">"Are you sure you want to uninvite "</string>
+    <string name="kick_prompt">"Are you sure you want to kick "</string>
 </resources>
