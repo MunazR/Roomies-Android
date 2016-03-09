@@ -1,4 +1,4 @@
-package com.munaz.roomies;
+package com.munaz.roomies.adapters;
 
 import android.content.Context;
 import android.graphics.Bitmap;
@@ -14,16 +14,17 @@ import com.android.volley.VolleyError;
 import com.android.volley.toolbox.ImageRequest;
 import com.munaz.api.Server;
 import com.munaz.model.User;
+import com.munaz.roomies.R;
 
 /**
- * Used to display users in a listview
+ * Used to display users in a list view
  */
 public class RoommateArrayAdapter extends ArrayAdapter<String> {
     private final Context context;
     private final User[] users;
 
     public RoommateArrayAdapter(Context context, User[] users, String[] displayNames) {
-        super(context, R.layout.roommate, displayNames);
+        super(context, R.layout.list_roommate, displayNames);
 
         this.context = context;
         this.users = users;
@@ -35,7 +36,7 @@ public class RoommateArrayAdapter extends ArrayAdapter<String> {
                 .getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 
         User selectedUser = users[position];
-        View rowView = inflater.inflate(R.layout.roommate, parent, false);
+        View rowView = inflater.inflate(R.layout.list_roommate, parent, false);
         TextView textView = (TextView) rowView.findViewById(R.id.profile_name);
         final ImageView imageView = (ImageView) rowView.findViewById(R.id.profile_picture);
         textView.setText(selectedUser.displayName);

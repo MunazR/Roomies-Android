@@ -72,6 +72,7 @@ public class LoginActivity extends AppCompatActivity {
             if (Db.getInstance(getApplicationContext()).getUser(Profile.getCurrentProfile().getId())
                     != null) {
                 startActivity(mainActivity);
+                finish();
             } else { // Log them into server
                 login(mainActivity);
             }
@@ -83,6 +84,7 @@ public class LoginActivity extends AppCompatActivity {
         super.onActivityResult(requestCode, resultCode, data);
         if (resultCode == 0) {
             startActivity(data);
+            finish();
         }
         callbackManager.onActivityResult(requestCode, resultCode, data);
     }
@@ -140,6 +142,7 @@ public class LoginActivity extends AppCompatActivity {
                     return;
                 }
                 startActivity(intent);
+                finish();
             }
         }, new Response.ErrorListener() {
             @Override

@@ -2,16 +2,21 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
 
     <group android:checkableBehavior="single">
-        <item android:id="@+id/roommates"
+        <item
+            android:id="@+id/roommates"
+            android:icon="@drawable/icon_roommate"
             android:title="@string/Roommates" />
         <item
             android:id="@+id/chores"
+            android:icon="@drawable/icon_chore"
             android:title="@string/chores" />
         <item
             android:id="@+id/expenses"
+            android:icon="@drawable/icon_expense"
             android:title="@string/expenses" />
         <item
             android:id="@+id/pantry"
+            android:icon="@drawable/icon_pantry"
             android:title="@string/pantry" />
         <item
             android:id="@+id/nav_manage"

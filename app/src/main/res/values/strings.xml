@@ -32,7 +32,7 @@
     <string name="your_roommates">Your roommates</string>
     <string name="invite_roommate">Invite roommates</string>
     <string name="leave_group">Leave group</string>
-    <string name="no_group_message">Create a new group of roommates or join a group!</string>
+    <string name="no_group_message">Create a new group of roommates or join one!</string>
     <string name="create_group">Create group</string>
     <string name="invites">Invites</string>
     <string name="no_invites">No Invites</string>
@@ -47,4 +47,15 @@
     <string name="leave_group_prompt">Are you sure you want to leave this group?</string>
     <string name="uninvite_prompt">"Are you sure you want to uninvite "</string>
     <string name="kick_prompt">"Are you sure you want to kick "</string>
+    <string name="title_activity_chores">Chores</string>
+    <string name="create_new_chore">Create new chore</string>
+    <string name="back">Back</string>
+    <string name="create">Create</string>
+    <string name="create_chore">Create chore</string>
+    <string name="chore_title_hint">Chore title</string>
+    <string name="no_chore_title_message">Please enter a chore title.</string>
+    <string name="chore_created">Chore created</string>
+    <string name="no_chores">No chores, create one!</string>
+    <string name="remove_chore_prompt">Would you like to remove this chore?</string>
+    <string name="chore_removed">Chore removed</string>
 </resources>

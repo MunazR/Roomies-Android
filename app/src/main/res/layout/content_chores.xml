@@ -10,31 +10,26 @@
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
     app:layout_behavior="@string/appbar_scrolling_view_behavior"
-    tools:context="com.munaz.roomies.RoommateSearchActivity"
-    tools:showIn="@layout/activity_roommate_search">
+    tools:context="com.munaz.roomies.ChoresActivity"
+    tools:showIn="@layout/app_bar_chores">
 
     <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:id="@+id/no_chores"
+        android:text="@string/no_chores"
+        android:textSize="24sp"
         android:layout_gravity="center_horizontal"
-        android:text="@string/invite_instruction" />
-
-    <View
-        android:layout_width="match_parent"
-        android:layout_height="1dp"
-        android:layout_margin="10dp"
-        android:background="@android:color/darker_gray" />
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content" />
 
     <ListView
-        android:id="@+id/users"
+        android:id="@+id/chores_list"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1"></ListView>
 
     <Button
-        android:id="@+id/back_button"
+        android:id="@+id/create_chore"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="@string/back" />
-
+        android:text="@string/create_new_chore" />
 </LinearLayout>

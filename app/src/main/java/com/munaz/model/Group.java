@@ -8,19 +8,21 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Model for GroupObject
+ * Model for Group object
  */
 public class Group {
     public String id;
     public User owner;
     public List<User> members;
     public List<User> invited;
+    public List<Chore> chores;
 
-    public Group(String id, User owner, List<User> members, List<User> invited) {
+    public Group(String id, User owner, List<User> members, List<User> invited, List<Chore> chores) {
         this.id = id;
         this.owner = owner;
         this.members = members;
         this.invited = invited;
+        this.chores = chores;
     }
 
     public Group(JSONObject group) throws JSONException {
@@ -39,6 +41,13 @@ public class Group {
 
         for (int i = 0; i < invited.length(); i++) {
             this.invited.add(new User(invited.getJSONObject(i)));
+        }
+
+        this.chores = new ArrayList<>();
+        JSONArray chores = group.getJSONArray("chores");
+
+        for (int i = 0; i < chores.length(); i++) {
+            this.chores.add(new Chore(chores.getJSONObject(i)));
         }
     }
 }

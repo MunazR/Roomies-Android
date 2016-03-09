@@ -13,6 +13,7 @@ public class DbHelper extends SQLiteOpenHelper {
 
     public static final String GROUP_TABLE_NAME = "Groups";
     public static final String USER_TABLE_NAME = "Users";
+    public static final String CHORES_TABLE_NAME = "Chores";
 
     public static final String USER_COLUMN_ID = "Id";
     public static final String USER_COLUMN_FIRST_NAME = "First_Name";
@@ -24,6 +25,11 @@ public class DbHelper extends SQLiteOpenHelper {
     public static final String GROUP_COLUMN_OWNER = "Owner";
     public static final String GROUP_COLUMN_MEMBERS = "Members";
     public static final String GROUP_COLUMN_INVITED = "Invited";
+    public static final String GROUP_COLUMN_CHORES = "Chores";
+
+    public static final String CHORES_COLUMN_ID = "Id";
+    public static final String CHORES_COLUMN_TITLE = "Title";
+    public static final String CHORES_COLUMN_ASSIGNED_TO = "AssignedTo";
 
     private static final String USER_TABLE_CREATE =
             "CREATE TABLE " + USER_TABLE_NAME + " (" +
@@ -38,7 +44,14 @@ public class DbHelper extends SQLiteOpenHelper {
                     GROUP_COLUMN_ID + " TEXT PRIMARY KEY, " +
                     GROUP_COLUMN_OWNER + " TEXT, " +
                     GROUP_COLUMN_MEMBERS + " TEXT, " +
-                    GROUP_COLUMN_INVITED + " TEXT)";
+                    GROUP_COLUMN_INVITED + " TEXT, " +
+                    GROUP_COLUMN_CHORES + " TEXT)";
+
+    private static final String CHORES_TABLE_CREATE =
+            "CREATE TABLE " + CHORES_TABLE_NAME + " ( " +
+                    CHORES_COLUMN_ID + " TEXT PRIMARY KEY, " +
+                    CHORES_COLUMN_TITLE + " TEXT, " +
+                    CHORES_COLUMN_ASSIGNED_TO + " TEXT)";
 
     DbHelper(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
@@ -48,6 +61,7 @@ public class DbHelper extends SQLiteOpenHelper {
     public void onCreate(SQLiteDatabase db) {
         db.execSQL(USER_TABLE_CREATE);
         db.execSQL(GROUP_TABLE_CREATE);
+        db.execSQL(CHORES_TABLE_CREATE);
     }
 
     @Override
@@ -55,6 +69,7 @@ public class DbHelper extends SQLiteOpenHelper {
         String query = "DROP TABLE IF EXISTS ";
         db.execSQL(query + GROUP_TABLE_NAME);
         db.execSQL(query + USER_TABLE_NAME);
+        db.execSQL(query + CHORES_TABLE_NAME);
         onCreate(db);
     }
 }

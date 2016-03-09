@@ -24,6 +24,8 @@ public class Server {
     public static final String GROUP_KICK_URL = "/group/kick";
     public static final String GROUP_INVITE_URL = "/group/invite";
     public static final String GROUP_ACCEPT_URL = "/group/accept";
+    public static final String CHORE_CREATE_URL = "/chore/create";
+    public static final String CHORE_DELETE_URL = "/chore/delete";
 
     private static Server mInstance = null;
     private static Context mCtx;

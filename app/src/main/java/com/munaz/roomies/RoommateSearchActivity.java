@@ -9,6 +9,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
+import android.widget.Button;
 import android.widget.ListView;
 import android.widget.Toast;
 
@@ -19,6 +20,7 @@ import com.android.volley.toolbox.JsonObjectRequest;
 import com.facebook.Profile;
 import com.munaz.api.Server;
 import com.munaz.model.User;
+import com.munaz.roomies.adapters.RoommateArrayAdapter;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -32,6 +34,15 @@ public class RoommateSearchActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_roommate_search);
         handleIntent(getIntent());
+
+        Button backButton = (Button) findViewById(R.id.back_button);
+
+        backButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                finish();
+            }
+        });
     }
 
     @Override

@@ -5,6 +5,7 @@ import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 
+import com.munaz.model.Chore;
 import com.munaz.model.Group;
 import com.munaz.model.User;
 
@@ -16,11 +17,9 @@ import java.util.List;
  */
 public class Db {
     private static Db mInstance = null;
-    private static Context mCtx = null;
     private static SQLiteDatabase mDb = null;
 
     private Db(Context context) {
-        mCtx = context;
         mDb = new DbHelper(context).getWritableDatabase();
     }
 
@@ -48,35 +47,59 @@ public class Db {
         String[] memberIds = groupCursor.getString(2).split(",");
         List<User> members = new ArrayList<>();
 
-        for (int i = 0; i < memberIds.length; i++) {
-            members.add(getUser(memberIds[i]));
+        for (String memberId : memberIds) {
+            members.add(getUser(memberId));
         }
 
-        String[] invitedIds = groupCursor.getString(3).split(",");
         List<User> invited = new ArrayList<>();
+        String inviteIdsConcat = groupCursor.getString(3);
+        if (!inviteIdsConcat.equals("")) {
+            String[] invitedIds = inviteIdsConcat.split(",");
 
-        for (int i = 0; i < invitedIds.length; i++) {
-            invited.add(getUser(invitedIds[i]));
+            for (String invitedId : invitedIds) {
+                invited.add(getUser(invitedId));
+            }
         }
 
-        return new Group(id, owner, members, invited);
+        List<Chore> chores = new ArrayList<>();
+        String choreIdsConcat = groupCursor.getString(4);
+        if (!choreIdsConcat.equals("")) {
+            String[] choreIds = choreIdsConcat.split(",");
+
+            for (String choreId : choreIds) {
+                chores.add(getChore(choreId));
+            }
+        }
+
+        groupCursor.close();
+
+        return new Group(id, owner, members, invited, chores);
     }
 
     public void insertGroup(Group group) {
-        // Clear db of any old groups
         mDb.delete(DbHelper.GROUP_TABLE_NAME, null, null);
         mDb.delete(DbHelper.USER_TABLE_NAME, null, null);
+        mDb.delete(DbHelper.CHORES_TABLE_NAME, null, null);
 
         StringBuilder memberIds = new StringBuilder();
         for (User user : group.members) {
             insertUser(user);
-            memberIds.append(user.id + ",");
+            memberIds.append(user.id);
+            memberIds.append(",");
         }
 
         StringBuilder invitedIds = new StringBuilder();
         for (User user : group.invited) {
             insertUser(user);
-            invitedIds.append(user.id + ",");
+            invitedIds.append(user.id);
+            invitedIds.append(",");
+        }
+
+        StringBuilder choreIds = new StringBuilder();
+        for (Chore chore : group.chores) {
+            insertChore(chore);
+            choreIds.append(chore.id);
+            choreIds.append(",");
         }
 
         ContentValues values = new ContentValues();
@@ -84,6 +107,7 @@ public class Db {
         values.put(DbHelper.GROUP_COLUMN_OWNER, group.owner.id);
         values.put(DbHelper.GROUP_COLUMN_MEMBERS, memberIds.toString());
         values.put(DbHelper.GROUP_COLUMN_INVITED, invitedIds.toString());
+        values.put(DbHelper.GROUP_COLUMN_CHORES, choreIds.toString());
 
         mDb.insert(DbHelper.GROUP_TABLE_NAME, null, values);
     }
@@ -100,7 +124,7 @@ public class Db {
     }
 
     public User getUser(String userId) {
-        String[] args = { userId };
+        String[] args = {userId};
         Cursor userCursor
                 = mDb.query(DbHelper.USER_TABLE_NAME, null, "ID = ?", args, null, null, null);
 
@@ -116,6 +140,43 @@ public class Db {
         String displayName = userCursor.getString(3);
         String profilePictureUrl = userCursor.getString(4);
 
+        userCursor.close();
+
         return new User(id, firstName, lastName, displayName, profilePictureUrl);
+    }
+
+    public void insertChore(Chore chore) {
+        ContentValues values = new ContentValues();
+        values.put(DbHelper.CHORES_COLUMN_ID, chore.id);
+        values.put(DbHelper.CHORES_COLUMN_TITLE, chore.title);
+        values.put(DbHelper.CHORES_COLUMN_ASSIGNED_TO, chore.assignedTo);
+
+        mDb.insert(DbHelper.CHORES_TABLE_NAME, null, values);
+    }
+
+    public Chore getChore(String choreId) {
+        String[] args = {choreId};
+        Cursor choreCursor
+                = mDb.query(DbHelper.CHORES_TABLE_NAME, null, "ID = ?", args, null, null, null);
+
+        if (choreCursor.getCount() == 0) {
+            return null;
+        }
+
+        choreCursor.moveToFirst();
+
+        String id = choreCursor.getString(0);
+        String title = choreCursor.getString(1);
+        String assignedTo = choreCursor.getString(2);
+
+        choreCursor.close();
+
+        return new Chore(id, title, assignedTo);
+    }
+
+    public void emptyDb() {
+        mDb.delete(DbHelper.GROUP_TABLE_NAME, null, null);
+        mDb.delete(DbHelper.USER_TABLE_NAME, null, null);
+        mDb.delete(DbHelper.CHORES_TABLE_NAME, null, null);
     }
 }

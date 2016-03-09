@@ -4,6 +4,7 @@ import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
@@ -30,6 +31,7 @@ import com.munaz.api.Server;
 import com.munaz.db.Db;
 import com.munaz.model.Group;
 import com.munaz.model.User;
+import com.munaz.roomies.adapters.RoommateArrayAdapter;
 import com.munaz.util.AppUtils;
 
 import org.json.JSONArray;
@@ -110,7 +112,11 @@ public class MainActivity extends AppCompatActivity
         inviteRoommateButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                onSearchRequested();
+                if (AppUtils.isNetworkAvailable(getApplicationContext())) {
+                    onSearchRequested();
+                } else {
+                    Toast.makeText(getApplicationContext(), "No network connection", Toast.LENGTH_SHORT).show();
+                }
             }
         });
 
@@ -155,31 +161,35 @@ public class MainActivity extends AppCompatActivity
     public boolean onNavigationItemSelected(MenuItem item) {
         // Handle navigation view item clicks here.
         int id = item.getItemId();
+        boolean returnVal = false;
 
-        if (id == R.id.roommates) {
-            // Handle the room mates action
-        } else if (id == R.id.chores) {
-            // Handle the chores action
-        } else if (id == R.id.expenses) {
-            // Handle the expenses action
-        } else if (id == R.id.pantry) {
-            // Handle the pantry action
-        } else if (id == R.id.nav_manage) {
-            // Handle the settings action
+        if (Db.getInstance(getApplicationContext()).getGroup() == null) {
+            Toast.makeText(getApplicationContext(), "Please join or create a group first", Toast.LENGTH_SHORT).show();
+        } else if (id != R.id.roommates) {
+            if (id == R.id.chores) {
+                // Handle the chores action
+                startActivity(new Intent(this, ChoresActivity.class));
+            } else if (id == R.id.expenses) {
+                // Handle the expenses action
+            } else if (id == R.id.pantry) {
+                // Handle the pantry action
+            } else if (id == R.id.nav_manage) {
+                // Handle the settings action
+            }
+            finish();
+            returnVal = true;
         }
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);
-        return true;
+        return returnVal;
     }
 
     private void refreshGroup(final Context context) {
-        // Check if network is available
         if (!AppUtils.isNetworkAvailable(context)) {
             Toast.makeText(context, "No network connection", Toast.LENGTH_SHORT).show();
             Group group = Db.getInstance(context).getGroup();
 
-            // No network connection, update with what we have in database
             if (group != null) {
                 updateViewWithGroup(group);
             }
@@ -187,14 +197,13 @@ public class MainActivity extends AppCompatActivity
             return;
         }
 
-        final ProgressDialog dialog = new ProgressDialog(this); // this = YourActivity
+        final ProgressDialog dialog = new ProgressDialog(this);
         dialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
         dialog.setMessage("Retrieving group. Please wait...");
         dialog.setIndeterminate(true);
         dialog.setCanceledOnTouchOutside(false);
         dialog.show();
 
-        // Update group from server
         final String baseUrl = getString(R.string.base_url);
         Profile profile = Profile.getCurrentProfile();
         JSONObject reqBody = new JSONObject();
@@ -202,8 +211,8 @@ public class MainActivity extends AppCompatActivity
         try {
             reqBody.put("facebookId", profile.getId());
         } catch (JSONException e) {
-            Log.e(TAG, "Error creating JSON object", e);
-            Toast.makeText(context, "An unexpected error occurred", Toast.LENGTH_SHORT).show();
+            dialog.hide();
+            handleError(e);
             return;
         }
 
@@ -219,6 +228,7 @@ public class MainActivity extends AppCompatActivity
                         updateViewWithGroup(group);
                     } else {
                         // No group so lets see if anyone invited us to theirs
+                        Db.getInstance(getApplicationContext()).emptyDb();
                         JSONObject reqBody = new JSONObject();
                         reqBody.put("facebookId", Profile.getCurrentProfile().getId());
 
@@ -424,6 +434,7 @@ public class MainActivity extends AppCompatActivity
             reqBody.put("facebookId", Profile.getCurrentProfile().getId());
             reqBody.put("ownerId", owner.id);
         } catch (JSONException e) {
+            dialog.hide();
             handleError(e);
             return;
         }
@@ -466,6 +477,7 @@ public class MainActivity extends AppCompatActivity
             reqBody.put("facebookId", Profile.getCurrentProfile().getId());
             reqBody.put("invitedId", user.id);
         } catch (JSONException e) {
+            dialog.hide();
             handleError(e);
             return;
         }
@@ -559,6 +571,7 @@ public class MainActivity extends AppCompatActivity
                     updateViewWithGroup(group);
                     Toast.makeText(getApplicationContext(), "Created new group", Toast.LENGTH_SHORT).show();
                 } catch (JSONException e) {
+                    dialog.hide();
                     handleError(e);
                 }
             }

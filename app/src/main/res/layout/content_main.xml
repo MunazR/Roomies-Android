@@ -13,13 +13,6 @@
     tools:context="com.munaz.roomies.MainActivity"
     tools:showIn="@layout/app_bar_main">
 
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:gravity="center_horizontal"
-        android:text="@string/roomies"
-        android:textSize="40sp" />
-
     <LinearLayout
         android:id="@+id/no_group_exists"
         android:layout_width="match_parent"
@@ -31,7 +24,10 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center_horizontal"
-            android:text="@string/no_group_message" />
+            android:layout_marginBottom="10dip"
+            android:text="@string/no_group_message"
+            android:textAlignment="center"
+            android:textSize="20sp" />
 
         <Button
             android:id="@+id/create_group"
@@ -51,7 +47,7 @@
             android:layout_height="wrap_content"
             android:layout_gravity="center_horizontal"
             android:text="@string/invites"
-            android:textSize="24sp" />
+            android:textSize="20sp" />
 
         <ListView
             android:id="@+id/invites"
@@ -71,7 +67,8 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:gravity="center_horizontal"
-            android:text="@string/your_roommates" />
+            android:text="@string/your_roommates"
+            android:textSize="20sp" />
 
         <ListView
             android:id="@+id/roommates"
@@ -87,11 +84,12 @@
             android:background="@android:color/darker_gray" />
 
         <TextView
+            android:id="@+id/invited_label"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:gravity="center_horizontal"
-            android:id="@+id/invited_label"
-            android:text="@string/invited" />
+            android:text="@string/invited"
+            android:textSize="20sp" />
 
         <ListView
             android:id="@+id/invited"
