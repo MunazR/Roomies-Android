@@ -13,23 +13,23 @@ import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.ImageRequest;
 import com.munaz.api.Server;
-import com.munaz.model.Chore;
+import com.munaz.model.Expense;
 import com.munaz.model.User;
 import com.munaz.roomies.R;
 
 /**
- * Used to display chores in a list view
+ * Used to display expenses in a list view
  */
-public class ChoreArrayAdapter extends ArrayAdapter<String> {
+public class ExpenseArrayAdapter extends ArrayAdapter<String> {
     private final Context context;
-    private final Chore[] chores;
+    private final Expense[] expenses;
     private final User[] users;
 
-    public ChoreArrayAdapter(Context context, Chore[] chores, User[] users, String[] choreTitles) {
-        super(context, R.layout.list_chore, choreTitles);
+    public ExpenseArrayAdapter(Context context, Expense[] expenses, User[] users, String[] expenseTitles) {
+        super(context, R.layout.list_expense, expenseTitles);
 
         this.context = context;
-        this.chores = chores;
+        this.expenses = expenses;
         this.users = users;
     }
 
@@ -38,20 +38,22 @@ public class ChoreArrayAdapter extends ArrayAdapter<String> {
         LayoutInflater inflater = (LayoutInflater) context
                 .getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 
-        Chore selectedChore = chores[position];
+        Expense selectedExpense = expenses[position];
         User selectedUser = null;
 
         for (User user : users) {
-            if (selectedChore.assignedTo.equals(user.id)) {
+            if (selectedExpense.expensedBy.equals(user.id)) {
                 selectedUser = user;
                 break;
             }
         }
 
-        View rowView = inflater.inflate(R.layout.list_chore, parent, false);
-        TextView textView = (TextView) rowView.findViewById(R.id.chore_title);
-        final ImageView imageView = (ImageView) rowView.findViewById(R.id.assigned_to_picture);
-        textView.setText(selectedChore.title);
+        View rowView = inflater.inflate(R.layout.list_expense, parent, false);
+        TextView titleTextView = (TextView) rowView.findViewById(R.id.expense_title);
+        TextView amountTextView = (TextView) rowView.findViewById(R.id.expense_amount);
+        final ImageView imageView = (ImageView) rowView.findViewById(R.id.expensed_by_picture);
+        titleTextView.setText(selectedExpense.title);
+        amountTextView.setText("$" + selectedExpense.amount);
 
         if (selectedUser != null) {
             ImageRequest request = new ImageRequest(selectedUser.profilePictureUrl,

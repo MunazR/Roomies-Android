@@ -52,10 +52,20 @@
     <string name="back">Back</string>
     <string name="create">Create</string>
     <string name="create_chore">Create chore</string>
-    <string name="chore_title_hint">Chore title</string>
+    <string name="chore_title_hint">Title</string>
     <string name="no_chore_title_message">Please enter a chore title.</string>
     <string name="chore_created">Chore created</string>
     <string name="no_chores">No chores, create one!</string>
     <string name="remove_chore_prompt">Would you like to remove this chore?</string>
     <string name="chore_removed">Chore removed</string>
+    <string name="title_activity_expenses">Expenses</string>
+    <string name="no_expenses">No expenses, create one!</string>
+    <string name="create_new_expense">Create new expense</string>
+    <string name="expense_title_hint">Title</string>
+    <string name="expense_amount_hint">Amount</string>
+    <string name="create_expense">Create expense</string>
+    <string name="no_expense_title">Please enter a valid expense title!</string>
+    <string name="invalid_expense_amount">Please enter a valid expense amount</string>
+    <string name="expense_created">Expense created</string>
+    <string name="remove_expense_prompt">Are you sure you want to remove this expense?</string>
 </resources>

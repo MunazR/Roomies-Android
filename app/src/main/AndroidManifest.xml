@@ -55,6 +55,10 @@
             android:name=".ChoresActivity"
             android:label="@string/title_activity_chores"
             android:theme="@style/AppTheme.NoActionBar" />
+        <activity
+            android:name=".ExpensesActivity"
+            android:label="@string/title_activity_expenses"
+            android:theme="@style/AppTheme.NoActionBar"></activity>
     </application>
 
 </manifest>

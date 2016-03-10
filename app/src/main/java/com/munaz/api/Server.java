@@ -15,8 +15,9 @@ import com.android.volley.toolbox.Volley;
 public class Server {
     public static final String LOGIN_URL = "/login";
     public static final String USERS_URL = "/users";
-    public static final String GROUP_URL = "/group";
     public static final String INVITES_URL = "/invites";
+
+    public static final String GROUP_URL = "/group";
     public static final String GROUP_CREATE_URL = "/group/create";
     public static final String GROUP_DELETE_URL = "/group/delete";
     public static final String GROUP_LEAVE_URL = "/group/leave";
@@ -24,8 +25,12 @@ public class Server {
     public static final String GROUP_KICK_URL = "/group/kick";
     public static final String GROUP_INVITE_URL = "/group/invite";
     public static final String GROUP_ACCEPT_URL = "/group/accept";
+
     public static final String CHORE_CREATE_URL = "/chore/create";
     public static final String CHORE_DELETE_URL = "/chore/delete";
+
+    public static final String EXPENSE_CREATE_URL = "/expense/create";
+    public static final String EXPENSE_DELETE_URL = "/expense/delete";
 
     private static Server mInstance = null;
     private static Context mCtx;

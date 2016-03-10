@@ -6,6 +6,7 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 
 import com.munaz.model.Chore;
+import com.munaz.model.Expense;
 import com.munaz.model.Group;
 import com.munaz.model.User;
 
@@ -71,15 +72,23 @@ public class Db {
             }
         }
 
+        List<Expense> expenses = new ArrayList<>();
+        String expenseIdsConcat = groupCursor.getString(5);
+        if (!expenseIdsConcat.equals("")) {
+            String[] expenseIds = expenseIdsConcat.split(",");
+
+            for (String expenseId: expenseIds) {
+                expenses.add(getExpense(expenseId));
+            }
+        }
+
         groupCursor.close();
 
-        return new Group(id, owner, members, invited, chores);
+        return new Group(id, owner, members, invited, chores, expenses);
     }
 
     public void insertGroup(Group group) {
-        mDb.delete(DbHelper.GROUP_TABLE_NAME, null, null);
-        mDb.delete(DbHelper.USER_TABLE_NAME, null, null);
-        mDb.delete(DbHelper.CHORES_TABLE_NAME, null, null);
+        emptyDb();
 
         StringBuilder memberIds = new StringBuilder();
         for (User user : group.members) {
@@ -102,12 +111,20 @@ public class Db {
             choreIds.append(",");
         }
 
+        StringBuilder expenseIds = new StringBuilder();
+        for (Expense expense : group.expenses) {
+            insertExpense(expense);
+            expenseIds.append(expense.id);
+            expenseIds.append(",");
+        }
+
         ContentValues values = new ContentValues();
         values.put(DbHelper.GROUP_COLUMN_ID, group.id);
         values.put(DbHelper.GROUP_COLUMN_OWNER, group.owner.id);
         values.put(DbHelper.GROUP_COLUMN_MEMBERS, memberIds.toString());
         values.put(DbHelper.GROUP_COLUMN_INVITED, invitedIds.toString());
         values.put(DbHelper.GROUP_COLUMN_CHORES, choreIds.toString());
+        values.put(DbHelper.GROUP_COLUMN_EXPENSES, expenseIds.toString());
 
         mDb.insert(DbHelper.GROUP_TABLE_NAME, null, values);
     }
@@ -174,9 +191,41 @@ public class Db {
         return new Chore(id, title, assignedTo);
     }
 
+    public void insertExpense(Expense expense) {
+        ContentValues values = new ContentValues();
+        values.put(DbHelper.EXPENSES_COLUMN_ID, expense.id);
+        values.put(DbHelper.EXPENSES_COLUMN_TITLE, expense.title);
+        values.put(DbHelper.EXPENSES_COLUMN_AMOUNT, expense.amount);
+        values.put(DbHelper.EXPENSES_COLUMN_EXPENSED_BY, expense.expensedBy);
+
+        mDb.insert(DbHelper.EXPENSES_TABLE_NAME, null, values);
+    }
+
+    public Expense getExpense(String expenseId) {
+        String[] args = {expenseId};
+        Cursor expenseCusor
+                = mDb.query(DbHelper.EXPENSES_TABLE_NAME, null, "ID = ?", args, null, null, null);
+
+        if (expenseCusor.getCount() == 0) {
+            return null;
+        }
+
+        expenseCusor.moveToFirst();
+
+        String id = expenseCusor.getString(0);
+        String title = expenseCusor.getString(1);
+        int amount = expenseCusor.getInt(2);
+        String expensedBy = expenseCusor.getString(3);
+
+        expenseCusor.close();
+
+        return new Expense(id, title, amount, expensedBy);
+    }
+
     public void emptyDb() {
         mDb.delete(DbHelper.GROUP_TABLE_NAME, null, null);
         mDb.delete(DbHelper.USER_TABLE_NAME, null, null);
         mDb.delete(DbHelper.CHORES_TABLE_NAME, null, null);
+        mDb.delete(DbHelper.EXPENSES_TABLE_NAME, null, null);
     }
 }

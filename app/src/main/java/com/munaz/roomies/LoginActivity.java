@@ -120,7 +120,7 @@ public class LoginActivity extends AppCompatActivity {
             reqBody.put("firstName", profile.getFirstName());
             reqBody.put("lastName", profile.getLastName());
             reqBody.put("displayName", profile.getName());
-            reqBody.put("profilePictureUrl", profile.getProfilePictureUri(64, 64).toString());
+            reqBody.put("profilePictureUrl", profile.getProfilePictureUri(128, 128).toString());
         } catch (JSONException e) {
             dialog.hide();
             Log.e(TAG, "Error creating JSON object", e);
