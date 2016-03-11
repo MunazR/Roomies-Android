@@ -32,6 +32,9 @@ public class Server {
     public static final String EXPENSE_CREATE_URL = "/expense/create";
     public static final String EXPENSE_DELETE_URL = "/expense/delete";
 
+    public static final String PANTRY_CREATE_URL = "/pantry/create";
+    public static final String PANTRY_DELETE_URL = "/pantry/delete";
+
     private static Server mInstance = null;
     private static Context mCtx;
 

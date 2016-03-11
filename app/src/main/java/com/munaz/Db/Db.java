@@ -8,6 +8,7 @@ import android.database.sqlite.SQLiteDatabase;
 import com.munaz.model.Chore;
 import com.munaz.model.Expense;
 import com.munaz.model.Group;
+import com.munaz.model.PantryItem;
 import com.munaz.model.User;
 
 import java.util.ArrayList;
@@ -77,14 +78,24 @@ public class Db {
         if (!expenseIdsConcat.equals("")) {
             String[] expenseIds = expenseIdsConcat.split(",");
 
-            for (String expenseId: expenseIds) {
+            for (String expenseId : expenseIds) {
                 expenses.add(getExpense(expenseId));
+            }
+        }
+
+        List<PantryItem> pantryItems = new ArrayList<>();
+        String pantryItemIdsConcat = groupCursor.getString(6);
+        if (!pantryItemIdsConcat.equals("")) {
+            String[] pantryItemIds = pantryItemIdsConcat.split(",");
+
+            for (String pantryItemId : pantryItemIds) {
+                pantryItems.add(getPantryItem(pantryItemId));
             }
         }
 
         groupCursor.close();
 
-        return new Group(id, owner, members, invited, chores, expenses);
+        return new Group(id, owner, members, invited, chores, expenses, pantryItems);
     }
 
     public void insertGroup(Group group) {
@@ -118,6 +129,13 @@ public class Db {
             expenseIds.append(",");
         }
 
+        StringBuilder pantryItemIds = new StringBuilder();
+        for (PantryItem pantryItem : group.pantryItems) {
+            insertPantryItem(pantryItem);
+            pantryItemIds.append(pantryItem.id);
+            pantryItemIds.append(",");
+        }
+
         ContentValues values = new ContentValues();
         values.put(DbHelper.GROUP_COLUMN_ID, group.id);
         values.put(DbHelper.GROUP_COLUMN_OWNER, group.owner.id);
@@ -125,6 +143,7 @@ public class Db {
         values.put(DbHelper.GROUP_COLUMN_INVITED, invitedIds.toString());
         values.put(DbHelper.GROUP_COLUMN_CHORES, choreIds.toString());
         values.put(DbHelper.GROUP_COLUMN_EXPENSES, expenseIds.toString());
+        values.put(DbHelper.GROUP_COLUMN_PANTRY, pantryItemIds.toString());
 
         mDb.insert(DbHelper.GROUP_TABLE_NAME, null, values);
     }
@@ -222,10 +241,38 @@ public class Db {
         return new Expense(id, title, amount, expensedBy);
     }
 
+    public void insertPantryItem(PantryItem pantryItem) {
+        ContentValues values = new ContentValues();
+        values.put(DbHelper.PANTRY_COLUMN_ID, pantryItem.id);
+        values.put(DbHelper.PANTRY_COLUMN_TITLE, pantryItem.title);
+
+        mDb.insert(DbHelper.PANTRY_TABLE_NAME, null, values);
+    }
+
+    public PantryItem getPantryItem(String pantryItemId) {
+        String[] args = {pantryItemId};
+        Cursor pantryItemCursor
+                = mDb.query(DbHelper.PANTRY_TABLE_NAME, null, "ID = ?", args, null, null, null);
+
+        if (pantryItemCursor.getCount() == 0) {
+            return null;
+        }
+
+        pantryItemCursor.moveToFirst();
+
+        String id = pantryItemCursor.getString(0);
+        String title = pantryItemCursor.getString(1);
+
+        pantryItemCursor.close();
+
+        return new PantryItem(id, title);
+    }
+
     public void emptyDb() {
         mDb.delete(DbHelper.GROUP_TABLE_NAME, null, null);
         mDb.delete(DbHelper.USER_TABLE_NAME, null, null);
         mDb.delete(DbHelper.CHORES_TABLE_NAME, null, null);
         mDb.delete(DbHelper.EXPENSES_TABLE_NAME, null, null);
+        mDb.delete(DbHelper.PANTRY_TABLE_NAME, null, null);
     }
 }

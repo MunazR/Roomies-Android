@@ -159,16 +159,19 @@ public class MainActivity extends AppCompatActivity
         if (Db.getInstance(getApplicationContext()).getGroup() == null) {
             Toast.makeText(getApplicationContext(), "Please join or create a group first", Toast.LENGTH_SHORT).show();
         } else if (id != R.id.roommates) {
+            Intent intent = null;
+
             if (id == R.id.chores) {
-                startActivity(new Intent(this, ChoresActivity.class));
+                intent = new Intent(this, ChoresActivity.class);
             } else if (id == R.id.expenses) {
-                startActivity(new Intent(this, ExpensesActivity.class));
+                intent = new Intent(this, ExpensesActivity.class);
             } else if (id == R.id.pantry) {
-                // Handle the pantry action
+                intent = new Intent(this, PantryActivity.class);
             } else if (id == R.id.nav_manage) {
                 // Handle the settings action
             }
-            finish();
+            intent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
+            startActivity(intent);
             returnVal = true;
         }
 

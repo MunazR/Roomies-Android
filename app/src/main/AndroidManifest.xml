@@ -58,6 +58,10 @@
         <activity
             android:name=".ExpensesActivity"
             android:label="@string/title_activity_expenses"
+            android:theme="@style/AppTheme.NoActionBar" />
+        <activity
+            android:name=".PantryActivity"
+            android:label="@string/title_activity_pantry"
             android:theme="@style/AppTheme.NoActionBar"></activity>
     </application>
 

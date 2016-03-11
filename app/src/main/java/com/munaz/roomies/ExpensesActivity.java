@@ -98,23 +98,24 @@ public class ExpensesActivity extends AppCompatActivity
         return super.onOptionsItemSelected(item);
     }
 
-    @SuppressWarnings("StatementWithEmptyBody")
     @Override
     public boolean onNavigationItemSelected(MenuItem item) {
         int id = item.getItemId();
         boolean returnVal = false;
 
         if (id != R.id.expenses) {
+            Intent intent = null;
             if (id == R.id.roommates) {
-                startActivity(new Intent(this, MainActivity.class));
-            } else if (id == R.id.chores) {
-                startActivity(new Intent(this, ChoresActivity.class));
+                intent = new Intent(this, MainActivity.class);
             } else if (id == R.id.pantry) {
-                // Handle the pantry action
+                intent = new Intent(this, PantryActivity.class);
+            } else if (id == R.id.chores) {
+                intent = new Intent(this, ChoresActivity.class);
             } else if (id == R.id.nav_manage) {
                 // Handle the settings action
             }
-            finish();
+            intent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
+            startActivity(intent);
             returnVal = true;
         }
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
@@ -156,9 +157,10 @@ public class ExpensesActivity extends AppCompatActivity
         JsonObjectRequest groupRequest = new JsonObjectRequest(Request.Method.POST, baseUrl + Server.GROUP_URL, reqBody, new Response.Listener<JSONObject>() {
             @Override
             public void onResponse(JSONObject response) {
+                dialog.hide();
+
                 try {
                     if (response.has("group")) {
-                        dialog.hide();
                         Group group = new Group(response.getJSONObject("group"));
                         Db.getInstance(context).insertGroup(group);
                         updateViewWithExpenses(group);
@@ -166,7 +168,6 @@ public class ExpensesActivity extends AppCompatActivity
                         Toast.makeText(context, "You are not part of any group!", Toast.LENGTH_SHORT).show();
                     }
                 } catch (JSONException e) {
-                    dialog.hide();
                     handleError(e);
                 }
             }
@@ -279,7 +280,7 @@ public class ExpensesActivity extends AppCompatActivity
             @Override
             public void onResponse(JSONObject response) {
                 loadingDialog.hide();
-                Toast.makeText(getApplicationContext(), R.string.chore_removed, Toast.LENGTH_SHORT).show();
+                Toast.makeText(getApplicationContext(), R.string.expense_removed, Toast.LENGTH_SHORT).show();
                 refreshExpenses(getApplicationContext());
             }
         }, new Response.ErrorListener() {

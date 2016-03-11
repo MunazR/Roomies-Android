@@ -17,14 +17,16 @@ public class Group {
     public List<User> invited;
     public List<Chore> chores;
     public List<Expense> expenses;
+    public List<PantryItem> pantryItems;
 
-    public Group(String id, User owner, List<User> members, List<User> invited, List<Chore> chores, List<Expense> expenses) {
+    public Group(String id, User owner, List<User> members, List<User> invited, List<Chore> chores, List<Expense> expenses, List<PantryItem> pantryItems) {
         this.id = id;
         this.owner = owner;
         this.members = members;
         this.invited = invited;
         this.chores = chores;
         this.expenses = expenses;
+        this.pantryItems = pantryItems;
     }
 
     public Group(JSONObject group) throws JSONException {
@@ -57,6 +59,13 @@ public class Group {
 
         for (int i = 0; i < expenses.length(); i++) {
             this.expenses.add(new Expense(expenses.getJSONObject(i)));
+        }
+
+        this.pantryItems = new ArrayList<>();
+        JSONArray pantryItems = group.getJSONArray("pantry");
+
+        for (int i = 0; i < pantryItems.length(); i++) {
+            this.pantryItems.add(new PantryItem(pantryItems.getJSONObject(i)));
         }
     }
 }

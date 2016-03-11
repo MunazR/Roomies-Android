@@ -12,10 +12,10 @@
     android:gravity="bottom">
 
     <ImageView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_width="75dip"
+        android:layout_height="75dip"
         android:paddingTop="@dimen/nav_header_vertical_spacing"
-        android:src="@android:drawable/sym_def_app_icon"
+        android:src="@drawable/icon_group"
         android:id="@+id/imageView" />
 
     <TextView
