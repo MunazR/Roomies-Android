@@ -77,7 +77,7 @@
     <string name="pantry_item_removed">Pantry item removed</string>
     <string name="pantry_item_created">Pantry item created</string>
     <string name="remove_pantry_item_prompt">Are you sure you want to remove this pantry item?</string>
-    <string name="title_activity_settings">SettingsActivity</string>
+    <string name="title_activity_settings">Settings</string>
     <string name="app_info">Roomies App\nVersion: 1.0.0</string>
     <string name="sign_out">Sign out</string>
     <string name="sign_out_prompt">Are you sure you want to sign out?</string>
