@@ -150,7 +150,6 @@ public class MainActivity extends AppCompatActivity
         return super.onOptionsItemSelected(item);
     }
 
-    @SuppressWarnings("StatementWithEmptyBody")
     @Override
     public boolean onNavigationItemSelected(MenuItem item) {
         int id = item.getItemId();
@@ -168,7 +167,7 @@ public class MainActivity extends AppCompatActivity
             } else if (id == R.id.pantry) {
                 intent = new Intent(this, PantryActivity.class);
             } else if (id == R.id.nav_manage) {
-                // Handle the settings action
+                intent = new Intent(this, SettingsActivity.class);
             }
             intent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
             startActivity(intent);

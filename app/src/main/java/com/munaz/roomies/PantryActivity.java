@@ -111,7 +111,7 @@ public class PantryActivity extends AppCompatActivity
             } else if (id == R.id.chores) {
                 intent = new Intent(this, ChoresActivity.class);
             } else if (id == R.id.nav_manage) {
-                // Handle the settings action
+                intent = new Intent(this, SettingsActivity.class);
             }
             intent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
             startActivity(intent);
