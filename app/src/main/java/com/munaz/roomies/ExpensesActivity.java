@@ -256,42 +256,46 @@ public class ExpensesActivity extends AppCompatActivity
     }
 
     private void deleteExpense(Expense expense) {
-        final ProgressDialog loadingDialog = new ProgressDialog(ExpensesActivity.this);
-        loadingDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
-        loadingDialog.setMessage("Removing expense. Please wait...");
-        loadingDialog.setIndeterminate(true);
-        loadingDialog.setCanceledOnTouchOutside(false);
-        loadingDialog.show();
+        if (!AppUtils.isNetworkAvailable(getApplicationContext())) {
+            Toast.makeText(getApplicationContext(), "No network connection", Toast.LENGTH_SHORT).show();
+        } else {
+            final ProgressDialog loadingDialog = new ProgressDialog(ExpensesActivity.this);
+            loadingDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
+            loadingDialog.setMessage("Removing expense. Please wait...");
+            loadingDialog.setIndeterminate(true);
+            loadingDialog.setCanceledOnTouchOutside(false);
+            loadingDialog.show();
 
-        final String baseUrl = getString(R.string.base_url);
-        Profile profile = Profile.getCurrentProfile();
-        JSONObject reqBody = new JSONObject();
+            final String baseUrl = getString(R.string.base_url);
+            Profile profile = Profile.getCurrentProfile();
+            JSONObject reqBody = new JSONObject();
 
-        try {
-            reqBody.put("facebookId", profile.getId());
-            reqBody.put("expenseId", expense.id);
-        } catch (JSONException e) {
-            loadingDialog.hide();
-            handleError(e);
-            return;
+            try {
+                reqBody.put("facebookId", profile.getId());
+                reqBody.put("expenseId", expense.id);
+            } catch (JSONException e) {
+                loadingDialog.hide();
+                handleError(e);
+                return;
+            }
+
+            JsonObjectRequest deleteExpenseRequest = new JsonObjectRequest(Request.Method.POST, baseUrl + Server.EXPENSE_DELETE_URL, reqBody, new Response.Listener<JSONObject>() {
+                @Override
+                public void onResponse(JSONObject response) {
+                    loadingDialog.hide();
+                    Toast.makeText(getApplicationContext(), R.string.expense_removed, Toast.LENGTH_SHORT).show();
+                    refreshExpenses(getApplicationContext());
+                }
+            }, new Response.ErrorListener() {
+                @Override
+                public void onErrorResponse(VolleyError error) {
+                    loadingDialog.hide();
+                    handleError(error);
+                }
+            });
+
+            Server.getInstance(getApplicationContext()).addToRequestQueue(deleteExpenseRequest);
         }
-
-        JsonObjectRequest deleteExpenseRequest = new JsonObjectRequest(Request.Method.POST, baseUrl + Server.EXPENSE_DELETE_URL, reqBody, new Response.Listener<JSONObject>() {
-            @Override
-            public void onResponse(JSONObject response) {
-                loadingDialog.hide();
-                Toast.makeText(getApplicationContext(), R.string.expense_removed, Toast.LENGTH_SHORT).show();
-                refreshExpenses(getApplicationContext());
-            }
-        }, new Response.ErrorListener() {
-            @Override
-            public void onErrorResponse(VolleyError error) {
-                loadingDialog.hide();
-                handleError(error);
-            }
-        });
-
-        Server.getInstance(getApplicationContext()).addToRequestQueue(deleteExpenseRequest);
     }
 
     private void updateViewWithExpenses(final Group group) {

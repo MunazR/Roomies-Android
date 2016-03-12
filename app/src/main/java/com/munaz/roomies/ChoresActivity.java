@@ -262,42 +262,46 @@ public class ChoresActivity extends AppCompatActivity
     }
 
     private void deleteChore(Chore chore) {
-        final ProgressDialog loadingDialog = new ProgressDialog(ChoresActivity.this);
-        loadingDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
-        loadingDialog.setMessage("Removing chore. Please wait...");
-        loadingDialog.setIndeterminate(true);
-        loadingDialog.setCanceledOnTouchOutside(false);
-        loadingDialog.show();
+        if (!AppUtils.isNetworkAvailable(getApplicationContext())) {
+            Toast.makeText(getApplicationContext(), "No network connection", Toast.LENGTH_SHORT).show();
+        } else {
+            final ProgressDialog loadingDialog = new ProgressDialog(ChoresActivity.this);
+            loadingDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
+            loadingDialog.setMessage("Removing chore. Please wait...");
+            loadingDialog.setIndeterminate(true);
+            loadingDialog.setCanceledOnTouchOutside(false);
+            loadingDialog.show();
 
-        final String baseUrl = getString(R.string.base_url);
-        Profile profile = Profile.getCurrentProfile();
-        JSONObject reqBody = new JSONObject();
+            final String baseUrl = getString(R.string.base_url);
+            Profile profile = Profile.getCurrentProfile();
+            JSONObject reqBody = new JSONObject();
 
-        try {
-            reqBody.put("facebookId", profile.getId());
-            reqBody.put("choreId", chore.id);
-        } catch (JSONException e) {
-            loadingDialog.hide();
-            handleError(e);
-            return;
+            try {
+                reqBody.put("facebookId", profile.getId());
+                reqBody.put("choreId", chore.id);
+            } catch (JSONException e) {
+                loadingDialog.hide();
+                handleError(e);
+                return;
+            }
+
+            JsonObjectRequest deleteChoreRequest = new JsonObjectRequest(Request.Method.POST, baseUrl + Server.CHORE_DELETE_URL, reqBody, new Response.Listener<JSONObject>() {
+                @Override
+                public void onResponse(JSONObject response) {
+                    loadingDialog.hide();
+                    Toast.makeText(getApplicationContext(), R.string.chore_removed, Toast.LENGTH_SHORT).show();
+                    refreshChores(getApplicationContext());
+                }
+            }, new Response.ErrorListener() {
+                @Override
+                public void onErrorResponse(VolleyError error) {
+                    loadingDialog.hide();
+                    handleError(error);
+                }
+            });
+
+            Server.getInstance(getApplicationContext()).addToRequestQueue(deleteChoreRequest);
         }
-
-        JsonObjectRequest deleteChoreRequest = new JsonObjectRequest(Request.Method.POST, baseUrl + Server.CHORE_DELETE_URL, reqBody, new Response.Listener<JSONObject>() {
-            @Override
-            public void onResponse(JSONObject response) {
-                loadingDialog.hide();
-                Toast.makeText(getApplicationContext(), R.string.chore_removed, Toast.LENGTH_SHORT).show();
-                refreshChores(getApplicationContext());
-            }
-        }, new Response.ErrorListener() {
-            @Override
-            public void onErrorResponse(VolleyError error) {
-                loadingDialog.hide();
-                handleError(error);
-            }
-        });
-
-        Server.getInstance(getApplicationContext()).addToRequestQueue(deleteChoreRequest);
     }
 
     private void updateViewWithChores(final Group group) {
