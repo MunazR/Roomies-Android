@@ -27,7 +27,7 @@
     <string name="expenses">Expenses</string>
     <string name="pantry">Pantry</string>
     <string name="settings">Settings</string>
-    <string name="base_url">http://192.168.0.17:8080/api</string>
+    <string name="base_url">http://roomies.munaz.me/api</string>
     <string name="Roommates">Roommates</string>
     <string name="your_roommates">Your roommates</string>
     <string name="invite_roommate">Invite roommates</string>
