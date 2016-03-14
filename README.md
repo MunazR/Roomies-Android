@@ -5,22 +5,8 @@ View the backend service [here](https://github.com/MunazR/Roomies-Backend).
 ## Description
 Roomies is an Android application for roommates. It allows users to create, manage and add roommates to their group. They can then create chores for each member, track expenses and keep a list of pantry items. Users can sign up using their Facebook login.
 
-## Screenshots
-
-### Login Menu
-![Login Menu](https://github.com/MunazR/Roomies-Android/blob/master/screenshots/login.png)
-
-### Roommates
-![Roommates](https://github.com/MunazR/Roomies-Android/blob/master/screenshots/roommates.png)
-
-### Invite
-![Invite](https://github.com/MunazR/Roomies-Android/blob/master/screenshots/invite.png)
-
-### Create Chore
-![Create Chore](https://github.com/MunazR/Roomies-Android/blob/master/screenshots/create_chore.png)
-
-### Chores
-![Chores](https://github.com/MunazR/Roomies-Android/blob/master/screenshots/chores.png)
+## Download
+Download the app on the [Google Play Store](https://play.google.com/store/apps/details?id=com.munaz.roomies).
 
 ## License
 The MIT License (MIT)
