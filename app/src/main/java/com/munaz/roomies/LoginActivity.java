@@ -16,6 +16,7 @@ import com.facebook.FacebookCallback;
 import com.facebook.FacebookException;
 import com.facebook.FacebookSdk;
 import com.facebook.Profile;
+import com.facebook.ProfileTracker;
 import com.facebook.login.LoginResult;
 import com.facebook.login.widget.LoginButton;
 import com.munaz.api.Server;
@@ -40,19 +41,28 @@ public class LoginActivity extends AppCompatActivity {
 
         super.onCreate(savedInstanceState);
 
-        // Set up the login form.
         FacebookSdk.sdkInitialize(getApplicationContext());
         callbackManager = CallbackManager.Factory.create();
         setContentView(R.layout.activity_login);
 
         LoginButton loginButton = (LoginButton) findViewById(R.id.login_button);
-        // Other app specific specialization
 
-        // Callback registration
         loginButton.registerCallback(callbackManager, new FacebookCallback<LoginResult>() {
             @Override
             public void onSuccess(LoginResult loginResult) {
-                login(mainActivity);
+                if (Profile.getCurrentProfile() == null) {
+                    final ProfileTracker profileTracker = new ProfileTracker() {
+                        @Override
+                        protected void onCurrentProfileChanged(Profile oldProfile, Profile currentProfile) {
+                            this.stopTracking();
+                            login(mainActivity);
+                        }
+                    };
+                    profileTracker.startTracking();
+                } else {
+                    login(mainActivity);
+
+                }
             }
 
             @Override
@@ -66,14 +76,12 @@ public class LoginActivity extends AppCompatActivity {
             }
         });
 
-        // Check if user is already logged in
         if (AppUtils.isLoggedInFacebook()) {
-            // If user exists in database take them to MainActivity
             if (Db.getInstance(getApplicationContext()).getUser(Profile.getCurrentProfile().getId())
                     != null) {
                 startActivity(mainActivity);
                 finish();
-            } else { // Log them into server
+            } else {
                 login(mainActivity);
             }
         }
@@ -82,10 +90,6 @@ public class LoginActivity extends AppCompatActivity {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        if (resultCode == 0) {
-            startActivity(data);
-            finish();
-        }
         callbackManager.onActivityResult(requestCode, resultCode, data);
     }
 
@@ -105,7 +109,6 @@ public class LoginActivity extends AppCompatActivity {
             return;
         }
 
-        // Check if network is connected
         if (!AppUtils.isNetworkAvailable(getApplicationContext())) {
             dialog.hide();
             Toast.makeText(getApplicationContext(), "No network connection, try again later", Toast.LENGTH_SHORT).show();

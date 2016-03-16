@@ -75,7 +75,6 @@ public class SettingsActivity extends AppCompatActivity
     @Override
     public boolean onNavigationItemSelected(MenuItem item) {
         int id = item.getItemId();
-        boolean returnVal = false;
 
         if (Db.getInstance(getApplicationContext()).getGroup() == null) {
             Toast.makeText(getApplicationContext(), "Please join or create a group first", Toast.LENGTH_SHORT).show();
@@ -93,11 +92,10 @@ public class SettingsActivity extends AppCompatActivity
             }
             intent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
             startActivity(intent);
-            returnVal = true;
         }
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);
-        return returnVal;
+        return false;
     }
 }

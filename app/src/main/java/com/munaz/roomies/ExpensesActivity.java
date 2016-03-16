@@ -101,7 +101,6 @@ public class ExpensesActivity extends AppCompatActivity
     @Override
     public boolean onNavigationItemSelected(MenuItem item) {
         int id = item.getItemId();
-        boolean returnVal = false;
 
         if (id != R.id.expenses) {
             Intent intent = null;
@@ -116,11 +115,11 @@ public class ExpensesActivity extends AppCompatActivity
             }
             intent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
             startActivity(intent);
-            returnVal = true;
         }
+
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);
-        return returnVal;
+        return false;
     }
 
     private void refreshExpenses(final Context context) {
