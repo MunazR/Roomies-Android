@@ -100,7 +100,6 @@ public class PantryActivity extends AppCompatActivity
     @Override
     public boolean onNavigationItemSelected(MenuItem item) {
         int id = item.getItemId();
-        boolean returnVal = false;
 
         if (id != R.id.pantry) {
             Intent intent = null;
@@ -115,11 +114,11 @@ public class PantryActivity extends AppCompatActivity
             }
             intent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
             startActivity(intent);
-            returnVal = true;
         }
+
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);
-        return returnVal;
+        return false;
     }
 
     private void refreshPantryItems(final Context context) {
